@@ -1,0 +1,81 @@
+SECURE LOGIN ATTEMPT DETECTION - COMMANDS (WINDOWS CMD)
+=======================================================
+
+Put setup_db.py, server.py and client.py in one folder. Open CMD in that
+folder: open the folder in File Explorer, click the address bar, type
+cmd and press Enter. Or use:
+
+cd C:\path\to\your\folder
+
+
+0. ONE-TIME CHECKS
+------------------
+python --version                   # check Python 3 is installed
+
+If "python" is not recognized, install Python from python.org and tick
+"Add Python to PATH" during installation. Then reopen CMD.
+(Alternative command on some PCs: py --version, and use py instead of python.)
+
+
+1. CREATE THE DATABASE (run once)
+---------------------------------
+python setup_db.py
+
+Accounts created:
+  admin / admin123
+  user  / user123
+
+(Run it again any time to reset the database and clear the log.)
+
+
+2. START THE SERVER (CMD window 1, keep it open)
+------------------------------------------------
+python server.py
+
+Stop it with Ctrl + C.
+
+
+3. START THE CLIENT (CMD window 2)
+----------------------------------
+python client.py
+
+Menu:
+  1. Login   -> choose source IP (1 = 127.0.0.1, 2 = 127.0.0.2),
+                then enter username and password
+  2. Exit
+
+After a successful login:
+  1. Logout
+  2. View login log   (admin only)
+
+Note: the password is hidden while you type (nothing appears). This is
+normal. Just type it and press Enter.
+
+
+4. DEMO STEPS
+-------------
+a) Log in as admin from IP 1 with the correct password -> SUCCESS
+b) Choose "View login log" to see the table, then Logout
+c) Log in with wrong passwords from IP 1:
+     3rd wrong attempt -> warning message
+     5th wrong attempt -> SECURITY ALERT on server, IP 1 blocked 60 seconds
+d) Try the correct password from IP 1 -> still blocked
+e) Log in as user from IP 2 -> works (block is per IP)
+f) Wait 60 seconds, log in from IP 1 -> works again
+
+
+5. VIEW THE TABLE FROM CMD (optional)
+-------------------------------------
+python -c "import sqlite3; [print(r) for r in sqlite3.connect('auth.db').execute('SELECT * FROM login_log')]"
+
+(Windows CMD does not have the sqlite3 command by default, so use the
+Python one-liner above, or open auth.db in DB Browser for SQLite.)
+
+
+6. TROUBLESHOOTING
+------------------
+Address already in use     -> wait a few seconds and run server.py again
+Cannot reach the server    -> start server.py first
+Windows Firewall popup     -> click Allow access (or Cancel; localhost still works)
+Error binding 127.0.0.2    -> tell me the error message
+python not recognized      -> reinstall Python with "Add to PATH" ticked, or try: py server.py
